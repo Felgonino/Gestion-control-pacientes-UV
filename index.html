@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ficha Clínica — Odontología UV</title>
+<style>
+  :root{
+    --paper:#F5F3ED;
+    --panel:#FFFFFF;
+    --ink:#1B3A3A;
+    --ink-soft:#4A5D5D;
+    --line:#D8D2C2;
+    --teal:#0F5C5C;
+    --teal-dark:#0A3D3D;
+    --clay:#B5654A;
+    --amber:#C68A2E;
+    --danger:#A63A3A;
+    --ok:#3E7A4F;
+    --grey:#8A8578;
+    font-family:'Iowan Old Style','Georgia',serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Iowan Old Style',Georgia,serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{display:flex;min-height:100vh;}
+  /* SIDEBAR */
+  .sidebar{
+    width:260px;flex:0 0 260px;background:var(--teal-dark);color:#EDEAE0;
+    padding:20px 16px;display:flex;flex-direction:column;gap:14px;
+  }
+  .brand{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9FC3C0;font-family:'Helvetica Neue',Arial,sans-serif;}
+  .brand strong{display:block;font-size:17px;color:#fff;font-family:'Iowan Old Style',Georgia,serif;letter-spacing:0;margin-top:2px;}
+  .newpt{
+    background:var(--clay);color:#fff;border:none;padding:10px 12px;border-radius:3px;
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:.02em;
+    cursor:pointer;text-align:left;
+  }
+  .newpt:hover{background:#9F5640;}
+  .ptlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+  .ptcard{
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:3px;
+    padding:9px 10px;cursor:pointer;font-family:'Helvetica Neue',Arial,sans-serif;
+  }
+  .ptcard:hover{background:rgba(255,255,255,.1);}
+  .ptcard.active{background:rgba(181,101,74,.25);border-color:var(--clay);}
+  .ptcard .nm{font-size:13px;font-weight:600;color:#fff;}
+  .ptcard .meta{font-size:11px;color:#9FC3C0;margin-top:2px;}
+  .del{background:none;border:none;color:#c98;font-size:10px;cursor:pointer;padding:0;margin-top:4px;font-family:'Helvetica Neue',Arial,sans-serif;}
+  .del:hover{color:#fff;text-decoration:underline;}
+  .empty-list{font-size:12px;color:#9FC3C0;font-family:'Helvetica Neue',Arial,sans-serif;padding:8px 2px;}
+
+  /* MAIN */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .topbar{
+    background:var(--panel);border-bottom:2px solid var(--teal);padding:16px 28px;
+    display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;
+  }
+  .ptname{font-size:22px;font-weight:600;}
+  .ptsub{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .topactions{display:flex;gap:8px;}
+  .btn{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:.02em;
+    padding:8px 14px;border-radius:3px;border:1px solid var(--teal);background:transparent;color:var(--teal);cursor:pointer;
+  }
+  .btn:hover{background:var(--teal);color:#fff;}
+  .btn.solid{background:var(--teal);color:#fff;}
+  .btn.solid:hover{background:var(--teal-dark);}
+  .savebadge{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:var(--ok);align-self:center;opacity:0;transition:opacity .3s;}
+  .savebadge.show{opacity:1;}
+
+  .tabs{
+    display:flex;gap:2px;background:var(--panel);padding:0 28px;border-bottom:1px solid var(--line);
+    overflow-x:auto;
+  }
+  .tab{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+    padding:12px 14px;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;
+  }
+  .tab:hover{color:var(--teal);}
+  .tab.active{color:var(--teal-dark);border-bottom-color:var(--clay);}
+
+  .content{flex:1;padding:26px 28px 60px;overflow-y:auto;}
+  .panel{display:none;max-width:920px;}
+  .panel.active{display:block;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:20px 22px;margin-bottom:16px;}
+  .card h3{margin:0 0 14px;font-size:14px;color:var(--teal-dark);text-transform:uppercase;letter-spacing:.06em;font-family:'Helvetica Neue',Arial,sans-serif;border-bottom:1px solid var(--line);padding-bottom:8px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 18px;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field.full{grid-column:1/-1;}
+  label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+  input[type=text],input[type=date],input[type=number],select,textarea{
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:13.5px;padding:8px 9px;border:1px solid var(--line);
+    border-radius:3px;background:#FCFBF8;color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);}
+  textarea{resize:vertical;min-height:60px;font-family:'Helvetica Neue',Arial,sans-serif;}
+  .checks{display:flex;flex-wrap:wrap;gap:10px 18px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;}
+  .checks label{text-transform:none;font-weight:400;font-size:13px;display:flex;align-items:center;gap:6px;color:var(--ink);}
+
+  /* ODONTOGRAMA */
+  .odonto-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;}
+  .leg{display:flex;align-items:center;gap:5px;}
+  .sw{width:12px;height:12px;border-radius:2px;border:1px solid #0002;}
+  .arch{display:flex;justify-content:center;gap:3px;margin-bottom:6px;}
+  .tooth{
+    width:34px;height:44px;border:1.5px solid var(--ink-soft);border-radius:4px 4px 3px 3px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fff;
+    position:relative;
+  }
+  .tooth .num{font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;color:var(--ink-soft);position:absolute;top:-15px;}
+  .arch-row{display:flex;flex-direction:column;align-items:center;margin-bottom:22px;}
+  .archlabel{font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;color:var(--grey);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px;}
+
+  /* PLAN TABLE */
+  table{width:100%;border-collapse:collapse;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;}
+  th{background:#EFEBDF;text-align:left;padding:8px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);border-bottom:1px solid var(--line);}
+  td{padding:6px 8px;border-bottom:1px solid var(--line);}
+  td input,td select{width:100%;border:none;background:transparent;padding:4px;font-size:13px;}
+  td input:focus,td select:focus{background:#F5F3ED;border-radius:3px;}
+  .rowbtn{background:none;border:none;cursor:pointer;color:var(--danger);font-size:15px;}
+  .addrow{margin-top:10px;}
+
+  /* SESSIONS */
+  .session{border:1px solid var(--line);border-radius:4px;margin-bottom:14px;overflow:hidden;}
+  .session-head{background:#EFEBDF;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-family:'Helvetica Neue',Arial,sans-serif;}
+  .session-head .tit{font-size:13px;font-weight:600;}
+  .session-body{padding:14px;}
+  .checklist-item{display:flex;align-items:flex-start;gap:8px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);}
+  .checklist-item:last-child{border-bottom:none;}
+  .status-pill{font-size:10px;padding:2px 8px;border-radius:10px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;text-transform:uppercase;}
+  .status-pill.ok{background:#DEEEE0;color:var(--ok);}
+  .status-pill.pend{background:#F3E3D6;color:var(--clay);}
+
+  .placeholder{display:flex;align-items:center;justify-content:center;height:70vh;flex-direction:column;gap:10px;color:var(--ink-soft);font-family:'Helvetica Neue',Arial,sans-serif;text-align:center;}
+  .placeholder h2{font-family:'Iowan Old Style',Georgia,serif;color:var(--ink);font-size:22px;margin:0;}
+
+  @media print{
+    .sidebar,.tabs,.topactions,.newpt,.del{display:none!important;}
+    .panel{display:block!important;margin-bottom:24px;page-break-inside:avoid;}
+    body{background:#fff;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">Facultad de Odontología · UV<strong>Fichas Clínicas</strong></div>
+    <button class="newpt" id="btnNew">+ Nuevo paciente</button>
+    <div class="ptlist" id="ptList"></div>
+  </div>
+
+  <div class="main" id="main">
+    <div class="placeholder" id="placeholder">
+      <h2>Ninguna ficha seleccionada</h2>
+      <p>Crea un paciente nuevo o elige uno de la lista para empezar a registrar.</p>
+    </div>
+
+    <div id="fichaWrap" style="display:none;">
+      <div class="topbar">
+        <div>
+          <div class="ptname" id="hdrNombre">Paciente sin nombre</div>
+          <div class="ptsub" id="hdrSub">—</div>
+        </div>
+        <div class="topactions">
+          <span class="savebadge" id="saveBadge">Guardado ✓</span>
+          <button class="btn" id="btnPrint">Exportar / Imprimir</button>
+          <button class="btn solid" id="btnDel">Eliminar ficha</button>
+        </div>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-p="general">Datos generales</button>
+        <button class="tab" data-p="anamnesis">Anamnesis</button>
+        <button class="tab" data-p="examen">Examen clínico</button>
+        <button class="tab" data-p="odonto">Odontograma</button>
+        <button class="tab" data-p="perio">Periodontograma</button>
+        <button class="tab" data-p="plan">Diagnóstico y plan</button>
+        <button class="tab" data-p="sesiones">Registro de sesiones</button>
+        <button class="tab" data-p="consent">Consentimiento</button>
+      </div>
+
+      <div class="content">
+        <!-- GENERAL -->
+        <div class="panel active" data-panel="general">
+          <div class="card">
+            <h3>Identificación del paciente</h3>
+            <div class="grid">
+              <div class="field"><label>Nombre completo</label><input type="text" data-f="nombre"></div>
+              <div class="field"><label>RUT</label><input type="text" data-f="rut" placeholder="12.345.678-9"></div>
+              <div class="field"><label>Fecha de nacimiento</label><input type="date" data-f="fnac"></div>
+              <div class="field"><label>Sexo</label>
+                <select data-f="sexo"><option value="">Seleccionar</option><option>Femenino</option><option>Masculino</option><option>Otro</option></select>
+              </div>
+              <div class="field"><label>Previsión</label>
+                <select data-f="prevision"><option value="">Seleccionar</option><option>Fonasa A</option><option>Fonasa B</option><option>Fonasa C</option><option>Fonasa D</option><option>Isapre</option><option>Particular</option></select>
+              </div>
+              <div class="field"><label>Ocupación</label><input type="text" data-f="ocupacion"></div>
+              <div class="field"><label>Dirección</label><input type="text" data-f="direccion"></div>
+              <div class="field"><label>Teléfono</label><input type="text" data-f="telefono"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Datos académicos</h3>
+            <div class="grid">
+              <div class="field"><label>Alumno(a) tratante</label><input type="text" data-f="alumno"></div>
+              <div class="field"><label>Docente supervisor</label><input type="text" data-f="docente"></div>
+              <div class="field"><label>Clínica / Asignatura</label>
+                <select data-f="clinica">
+                  <option value="">Seleccionar</option>
+                  <option>Clínica Integral del Adulto</option>
+                  <option>Clínica Integral del Niño / Odontopediatría</option>
+                  <option>Periodoncia</option>
+                  <option>Endodoncia</option>
+                  <option>Cirugía Bucal</option>
+                  <option>Ortodoncia y Ortopedia Maxilofacial</option>
+                  <option>Rehabilitación Oral</option>
+                  <option>Otra</option>
+                </select>
+              </div>
+              <div class="field"><label>Fecha de ingreso</label><input type="date" data-f="fingreso"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANAMNESIS -->
+        <div class="panel" data-panel="anamnesis">
+          <div class="card">
+            <h3>Motivo de consulta</h3>
+            <div class="field full"><textarea data-f="motivo" placeholder="Relato del paciente..."></textarea></div>
+          </div>
+          <div class="card">
+            <h3>Antecedentes médicos</h3>
+            <div class="checks" id="antecedentes">
+              <label><input type="checkbox" value="Hipertensión">Hipertensión</label>
+              <label><input type="checkbox" value="Diabetes">Diabetes</label>
+              <label><input type="checkbox" value="Cardiopatías">Cardiopatías</label>
+              <label><input type="checkbox" value="Alergias">Alergias</label>
+              <label><input type="checkbox" value="Embarazo">Embarazo</label>
+              <label><input type="checkbox" value="Anticoagulantes">Uso de anticoagulantes</label>
+              <label><input type="checkbox" value="Trastorno hemorrágico">Trastorno hemorrágico</label>
+              <label><input type="checkbox" value="VIH/Hepatitis">VIH / Hepatitis</label>
+              <label><input type="checkbox" value="Ninguno">Ninguno relevante</label>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Detalle y medicamentos</h3>
+            <div class="grid">
+              <div class="field full"><label>Medicamentos actuales</label><textarea data-f="medicamentos"></textarea></div>
+              <div class="field"><label>Alergias (detalle)</label><input type="text" data-f="alergiasDet"></div>
+              <div class="field"><label>Hábitos (tabaco / alcohol / bruxismo)</label><input type="text" data-f="habitos"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXAMEN -->
+        <div class="panel" data-panel="examen">
+          <div class="card">
+            <h3>Examen extraoral</h3>
+            <div class="grid">
+              <div class="field"><label>ATM</label><input type="text" data-f="atm" placeholder="Sin hallazgos / describir"></div>
+              <div class="field"><label>Ganglios</label><input type="text" data-f="ganglios"></div>
+              <div class="field"><label>Simetría facial</label><input type="text" data-f="simetria"></div>
+              <div class="field"><label>Apertura bucal (mm)</label><input type="number" data-f="apertura"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Examen intraoral</h3>
+            <div class="grid">
+              <div class="field"><label>Mucosas</label><input type="text" data-f="mucosas"></div>
+              <div class="field"><label>Encías</label><input type="text" data-f="encias"></div>
+              <div class="field"><label>Lengua</label><input type="text" data-f="lengua"></div>
+              <div class="field"><label>Paladar / piso de boca</label><input type="text" data-f="paladar"></div>
+              <div class="field"><label>Higiene oral</label>
+                <select data-f="higiene"><option value="">Seleccionar</option><option>Buena</option><option>Regular</option><option>Deficiente</option></select>
+              </div>
+              <div class="field"><label>Oclusión</label><input type="text" data-f="oclusion"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ODONTOGRAMA -->
+        <div class="panel" data-panel="odonto">
+          <div class="card">
+            <h3>Odontograma (clic en cada pieza para cambiar estado)</h3>
+            <div class="odonto-legend" id="legend"></div>
+            <div class="arch-row">
+              <div class="archlabel">Superior derecho — Superior izquierdo</div>
+              <div class="arch" id="archUp"></div>
+            </div>
+            <div class="arch-row">
+              <div class="archlabel">Inferior izquierdo — Inferior derecho</div>
+              <div class="arch" id="archDown"></div>
+            </div>
+            <div class="field full"><label>Observaciones del odontograma</label><textarea data-f="odontoObs"></textarea></div>
+          </div>
+        </div>
+
+        <!-- PERIO -->
+        <div class="panel" data-panel="perio">
+          <div class="card">
+            <h3>Periodontograma simplificado (por sextante)</h3>
+            <table>
+              <thead><tr><th>Sextante</th><th>Prof. sondaje prom. (mm)</th><th>% Sangrado</th><th>Movilidad</th><th>Recesión (mm)</th></tr></thead>
+              <tbody id="perioBody"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h3>Diagnóstico periodontal</h3>
+            <div class="field full"><textarea data-f="perioDx" placeholder="Ej: Gingivitis generalizada / Periodontitis estadio II grado B..."></textarea></div>
+          </div>
+        </div>
+
+        <!-- PLAN -->
+        <div class="panel" data-panel="plan">
+          <div class="card">
+            <h3>Diagnóstico</h3>
+            <div class="field full"><textarea data-f="diagnostico"></textarea></div>
+          </div>
+          <div class="card">
+            <h3>Plan de tratamiento</h3>
+            <table>
+              <thead><tr><th style="width:16%">Pieza</th><th>Procedimiento</th><th style="width:16%">Prioridad</th><th style="width:16%">Estado</th><th style="width:30px"></th></tr></thead>
+              <tbody id="planBody"></tbody>
+            </table>
+            <button class="btn addrow" id="btnAddPlan">+ Agregar procedimiento</button>
+          </div>
+        </div>
+
+        <!-- SESIONES -->
+        <div class="panel" data-panel="sesiones">
+          <div class="card">
+            <h3 style="display:flex;justify-content:space-between;align-items:center;border-bottom:none;padding-bottom:0;">
+              <span>Registro de sesiones clínicas</span>
+              <button class="btn solid" id="btnAddSesion" style="text-transform:none;letter-spacing:0;">+ Nueva sesión</button>
+            </h3>
+          </div>
+          <div id="sesionesList"></div>
+        </div>
+
+        <!-- CONSENT -->
+        <div class="panel" data-panel="consent">
+          <div class="card">
+            <h3>Consentimiento informado</h3>
+            <div class="field full">
+              <textarea data-f="consentTexto" style="min-height:140px;">Declaro haber sido informado(a) de forma clara por el/la alumno(a) tratante y su docente supervisor sobre mi diagnóstico, las alternativas de tratamiento disponibles, sus beneficios, riesgos y el carácter docente-asistencial de la atención brindada en la Facultad de Odontología de la Universidad de Valparaíso. Habiendo resuelto mis dudas, autorizo la realización de los procedimientos descritos en el plan de tratamiento.</textarea>
+            </div>
+            <div class="grid" style="margin-top:12px;">
+              <div class="field"><label>Fecha de firma</label><input type="date" data-f="consentFecha"></div>
+              <div class="field"><label>Estado</label>
+                <select data-f="consentEstado"><option value="">Seleccionar</option><option>Firmado por paciente/tutor</option><option>Pendiente</option><option>No aplica</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOOTH_STATES = [
+  {key:'sano', label:'Sano', color:'#FFFFFF'},
+  {key:'caries', label:'Caries', color:'#C25B4A'},
+  {key:'obturado', label:'Obturado', color:'#3E6FA6'},
+  {key:'corona', label:'Corona', color:'#8A5FA6'},
+  {key:'endodoncia', label:'Endodoncia', color:'#C68A2E'},
+  {key:'ausente', label:'Ausente', color:'#B9B4A5'},
+];
+const UP_TEETH = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const DOWN_TEETH = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+const SEXTANTES = ['1.6-1.3 (Sup. Derecho)','1.2-2.2 (Sup. Anterior)','2.3-2.6 (Sup. Izquierdo)','3.6-3.3 (Inf. Izquierdo)','3.2-4.2 (Inf. Anterior)','4.3-4.6 (Inf. Derecho)'];
+const PLAN_ESTADOS = ['Pendiente','En curso','Realizado'];
+const PLAN_PRIORIDAD = ['Urgente','Alta','Media','Baja'];
+const SESION_CHECKS = [
+  'Anamnesis y consentimiento verificados',
+  'Radiografía(s) tomada(s) y adjunta(s)',
+  'Anestesia registrada (tipo/dosis)',
+  'Procedimiento realizado según plan',
+  'Indicaciones post-operatorias entregadas',
+  'Ficha firmada por docente supervisor'
+];
+
+let state = { patients: [], activeId: null, ficha: null };
+let saveTimer = null;
+
+// ---- Configuración de API (Google Apps Script) ----
+let API_URL = localStorage.getItem('apiUrl') || '';
+function ensureApiUrl(){
+  while(!API_URL){
+    const v = prompt('Pega la URL de tu Apps Script Web App (termina en /exec):');
+    if(v === null) { alert('Se necesita la URL de la API para usar la ficha.'); continue; }
+    API_URL = v.trim();
+  }
+  localStorage.setItem('apiUrl', API_URL);
+}
+async function apiGet(params){
+  const url = API_URL + '?' + new URLSearchParams(params).toString();
+  const r = await fetch(url);
+  return r.json();
+}
+async function apiPost(body){
+  // text/plain evita el preflight CORS que Apps Script no maneja bien
+  const r = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(body) });
+  return r.json();
+}
+
+function uid(){ return 'p'+Date.now()+Math.random().toString(36).slice(2,7); }
+
+function emptyFicha(){
+  return {
+    fields: {},
+    antecedentes: [],
+    odonto: {},
+    perio: SEXTANTES.map(()=>({sondaje:'',sangrado:'',movilidad:'',recesion:''})),
+    plan: [],
+    sesiones: []
+  };
+}
+
+async function loadIndex(){
+  try{
+    state.patients = await apiGet({action:'listPatients'});
+    if(!Array.isArray(state.patients)) state.patients = [];
+  }catch(e){ console.error(e); state.patients = []; alert('No se pudo conectar con la API. Revisa la URL configurada.'); }
+  renderPtList();
+}
+async function loadFicha(id){
+  try{
+    const r = await apiGet({action:'getFicha', id});
+    return r ? r : emptyFicha();
+  }catch(e){ console.error(e); return emptyFicha(); }
+}
+async function saveFicha(){
+  if(!state.activeId) return;
+  try{
+    await apiPost({action:'saveFicha', id: state.activeId, ficha: state.ficha});
+    const idx = state.patients.find(p=>p.id===state.activeId);
+    if(idx){
+      idx.nombre = state.ficha.fields.nombre || 'Paciente sin nombre';
+      idx.rut = state.ficha.fields.rut || '';
+      idx.clinica = state.ficha.fields.clinica || '';
+      renderPtList();
+    }
+    flashSaved();
+  }catch(e){ console.error(e); }
+}
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveFicha, 500);
+}
+function flashSaved(){
+  const b = document.getElementById('saveBadge');
+  b.classList.add('show');
+  clearTimeout(flashSaved._t);
+  flashSaved._t = setTimeout(()=>b.classList.remove('show'), 1200);
+}
+
+function renderPtList(){
+  const el = document.getElementById('ptList');
+  if(state.patients.length===0){
+    el.innerHTML = '<div class="empty-list">Aún no hay pacientes registrados.</div>';
+    return;
+  }
+  el.innerHTML = state.patients.slice().reverse().map(p=>`
+    <div class="ptcard ${p.id===state.activeId?'active':''}" data-id="${p.id}">
+      <div class="nm">${escapeHtml(p.nombre || 'Paciente sin nombre')}</div>
+      <div class="meta">${escapeHtml(p.rut||'Sin RUT')} · ${escapeHtml(p.clinica||'Sin clínica')}</div>
+      <button class="del" data-delid="${p.id}">Eliminar</button>
+    </div>`).join('');
+  el.querySelectorAll('.ptcard').forEach(c=>{
+    c.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('del')) return;
+      selectPatient(c.dataset.id);
+    });
+  });
+  el.querySelectorAll('.del').forEach(b=>{
+    b.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      if(!confirm('¿Eliminar esta ficha? Esta acción no se puede deshacer.')) return;
+      const id = b.dataset.delid;
+      state.patients = state.patients.filter(p=>p.id!==id);
+      try{ await apiPost({action:'deleteFicha', id}); }catch(e){ console.error(e); }
+      if(state.activeId===id){ state.activeId=null; document.getElementById('fichaWrap').style.display='none'; document.getElementById('placeholder').style.display='flex'; }
+      renderPtList();
+    });
+  });
+}
+
+function escapeHtml(s){
+  return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function selectPatient(id){
+  state.activeId = id;
+  state.ficha = await loadFicha(id);
+  document.getElementById('placeholder').style.display='none';
+  document.getElementById('fichaWrap').style.display='block';
+  renderPtList();
+  fillForm();
+}
+
+async function newPatient(){
+  try{
+    const p = {id: uid(), nombre:'', rut:'', clinica:''};
+    state.patients.push(p);
+    await apiPost({action:'newPatient', id: p.id});
+    await selectPatient(p.id);
+    document.querySelector('[data-f="nombre"]').focus();
+  }catch(err){
+    console.error('Error al crear paciente:', err);
+    alert('No se pudo crear el paciente: ' + err.message);
+  }
+}
+
+function fillForm(){
+  const f = state.ficha.fields;
+  document.querySelectorAll('[data-f]').forEach(el=>{
+    el.value = f[el.dataset.f] || '';
+  });
+  document.querySelectorAll('#antecedentes input').forEach(cb=>{
+    cb.checked = state.ficha.antecedentes.includes(cb.value);
+  });
+  document.getElementById('hdrNombre').textContent = f.nombre || 'Paciente sin nombre';
+  document.getElementById('hdrSub').textContent = [f.rut, f.clinica, f.alumno? ('Alumno: '+f.alumno):''].filter(Boolean).join(' · ') || '—';
+  renderOdonto();
+  renderPerio();
+  renderPlan();
+  renderSesiones();
+}
+
+function bindFieldListeners(){
+  document.querySelectorAll('[data-f]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      state.ficha.fields[el.dataset.f] = el.value;
+      if(el.dataset.f==='nombre'||el.dataset.f==='rut'||el.dataset.f==='clinica'||el.dataset.f==='alumno'){
+        document.getElementById('hdrNombre').textContent = state.ficha.fields.nombre || 'Paciente sin nombre';
+        document.getElementById('hdrSub').textContent = [state.ficha.fields.rut, state.ficha.fields.clinica, state.ficha.fields.alumno? ('Alumno: '+state.ficha.fields.alumno):''].filter(Boolean).join(' · ') || '—';
+      }
+      scheduleSave();
+    });
+  });
+  document.querySelectorAll('#antecedentes input').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const v = cb.value;
+      if(cb.checked){ if(!state.ficha.antecedentes.includes(v)) state.ficha.antecedentes.push(v); }
+      else{ state.ficha.antecedentes = state.ficha.antecedentes.filter(a=>a!==v); }
+      scheduleSave();
+    });
+  });
+}
+
+// ODONTOGRAMA
+function renderLegend(){
+  document.getElementById('legend').innerHTML = TOOTH_STATES.map(s=>
+    `<div class="leg"><div class="sw" style="background:${s.color}"></div>${s.label}</div>`).join('');
+}
+function toothEl(num){
+  const st = state.ficha.odonto[num] || 'sano';
+  const color = TOOTH_STATES.find(s=>s.key===st).color;
+  const div = document.createElement('div');
+  div.className='tooth';
+  div.style.background = color;
+  div.innerHTML = `<span class="num">${num}</span>${st==='ausente'?'✕':''}`;
+  div.addEventListener('click', ()=>{
+    const cur = state.ficha.odonto[num] || 'sano';
+    const i = TOOTH_STATES.findIndex(s=>s.key===cur);
+    const next = TOOTH_STATES[(i+1)%TOOTH_STATES.length].key;
+    state.ficha.odonto[num] = next;
+    scheduleSave();
+    renderOdonto();
+  });
+  return div;
+}
+function renderOdonto(){
+  renderLegend();
+  const up = document.getElementById('archUp'); up.innerHTML='';
+  const down = document.getElementById('archDown'); down.innerHTML='';
+  UP_TEETH.forEach(n=>up.appendChild(toothEl(n)));
+  DOWN_TEETH.forEach(n=>down.appendChild(toothEl(n)));
+}
+
+// PERIO
+function renderPerio(){
+  const body = document.getElementById('perioBody');
+  body.innerHTML = SEXTANTES.map((s,i)=>`
+    <tr>
+      <td>${s}</td>
+      <td><input type="number" step="0.1" data-perio="${i}" data-k="sondaje" value="${state.ficha.perio[i].sondaje}"></td>
+      <td><input type="number" data-perio="${i}" data-k="sangrado" value="${state.ficha.perio[i].sangrado}"></td>
+      <td><input type="text" data-perio="${i}" data-k="movilidad" value="${state.ficha.perio[i].movilidad}" placeholder="Grado I-III"></td>
+      <td><input type="number" step="0.1" data-perio="${i}" data-k="recesion" value="${state.ficha.perio[i].recesion}"></td>
+    </tr>`).join('');
+  body.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      state.ficha.perio[inp.dataset.perio][inp.dataset.k] = inp.value;
+      scheduleSave();
+    });
+  });
+}
+
+// PLAN
+function renderPlan(){
+  const body = document.getElementById('planBody');
+  body.innerHTML = state.ficha.plan.map((row,i)=>`
+    <tr>
+      <td><input type="text" data-plan="${i}" data-k="pieza" value="${escapeHtml(row.pieza)}"></td>
+      <td><input type="text" data-plan="${i}" data-k="proc" value="${escapeHtml(row.proc)}"></td>
+      <td><select data-plan="${i}" data-k="prioridad">${PLAN_PRIORIDAD.map(p=>`<option ${row.prioridad===p?'selected':''}>${p}</option>`).join('')}</select></td>
+      <td><select data-plan="${i}" data-k="estado">${PLAN_ESTADOS.map(p=>`<option ${row.estado===p?'selected':''}>${p}</option>`).join('')}</select></td>
+      <td><button class="rowbtn" data-delplan="${i}">✕</button></td>
+    </tr>`).join('');
+  body.querySelectorAll('[data-plan]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      state.ficha.plan[el.dataset.plan][el.dataset.k] = el.value;
+      scheduleSave();
+    });
+  });
+  body.querySelectorAll('[data-delplan]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.ficha.plan.splice(b.dataset.delplan,1);
+      scheduleSave();
+      renderPlan();
+    });
+  });
+}
+document.getElementById('btnAddPlan').addEventListener('click', ()=>{
+  state.ficha.plan.push({pieza:'',proc:'',prioridad:'Media',estado:'Pendiente'});
+  scheduleSave();
+  renderPlan();
+});
+
+// SESIONES
+function renderSesiones(){
+  const wrap = document.getElementById('sesionesList');
+  if(state.ficha.sesiones.length===0){
+    wrap.innerHTML = '<div class="card" style="text-align:center;color:var(--ink-soft);font-family:Helvetica,Arial,sans-serif;font-size:13px;">Sin sesiones registradas todavía.</div>';
+    return;
+  }
+  wrap.innerHTML = state.ficha.sesiones.map((s,i)=>{
+    const doneCount = s.checks.filter(Boolean).length;
+    return `
+    <div class="session">
+      <div class="session-head">
+        <span class="tit">Sesión ${i+1} — ${s.fecha||'sin fecha'}</span>
+        <span>
+          <span class="status-pill ${doneCount===SESION_CHECKS.length?'ok':'pend'}">${doneCount}/${SESION_CHECKS.length} ítems</span>
+          <button class="rowbtn" data-delses="${i}" style="margin-left:10px;">✕</button>
+        </span>
+      </div>
+      <div class="session-body">
+        <div class="grid" style="margin-bottom:12px;">
+          <div class="field"><label>Fecha</label><input type="date" data-ses="${i}" data-k="fecha" value="${s.fecha}"></div>
+          <div class="field"><label>Procedimiento realizado</label><input type="text" data-ses="${i}" data-k="proc" value="${escapeHtml(s.proc)}"></div>
+        </div>
+        <div class="field full" style="margin-bottom:12px;"><label>Observaciones</label><textarea data-ses="${i}" data-k="obs">${escapeHtml(s.obs)}</textarea></div>
+        <label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Checklist de requisitos</label>
+        ${SESION_CHECKS.map((c,ci)=>`
+          <div class="checklist-item">
+            <input type="checkbox" data-sesescheck="${i}" data-ci="${ci}" ${s.checks[ci]?'checked':''}>
+            <span>${c}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-ses]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      state.ficha.sesiones[el.dataset.ses][el.dataset.k] = el.value;
+      scheduleSave();
+    });
+  });
+  wrap.querySelectorAll('[data-sesescheck]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      state.ficha.sesiones[cb.dataset.sesescheck].checks[cb.dataset.ci] = cb.checked;
+      scheduleSave();
+      renderSesiones();
+    });
+  });
+  wrap.querySelectorAll('[data-delses]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.ficha.sesiones.splice(b.dataset.delses,1);
+      scheduleSave();
+      renderSesiones();
+    });
+  });
+}
+document.getElementById('btnAddSesion').addEventListener('click', ()=>{
+  state.ficha.sesiones.push({fecha:new Date().toISOString().slice(0,10), proc:'', obs:'', checks: SESION_CHECKS.map(()=>false)});
+  scheduleSave();
+  renderSesiones();
+});
+
+// TABS
+document.getElementById('tabs').addEventListener('click', (e)=>{
+  if(!e.target.classList.contains('tab')) return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.querySelector(`[data-panel="${e.target.dataset.p}"]`).classList.add('active');
+});
+
+document.getElementById('btnNew').addEventListener('click', newPatient);
+document.getElementById('btnPrint').addEventListener('click', ()=>window.print());
+document.getElementById('btnDel').addEventListener('click', async ()=>{
+  if(!state.activeId) return;
+  if(!confirm('¿Eliminar esta ficha? Esta acción no se puede deshacer.')) return;
+  const id = state.activeId;
+  state.patients = state.patients.filter(p=>p.id!==id);
+  try{ await apiPost({action:'deleteFicha', id}); }catch(e){ console.error(e); }
+  state.activeId = null;
+  document.getElementById('fichaWrap').style.display='none';
+  document.getElementById('placeholder').style.display='flex';
+  renderPtList();
+});
+
+(async function init(){
+  ensureApiUrl();
+  bindFieldListeners();
+  await loadIndex();
+})();
+</script>
+</body>
+</html>
