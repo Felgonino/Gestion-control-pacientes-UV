@@ -391,14 +391,40 @@ let state = { patients: [], activeId: null, ficha: null };
 let saveTimer = null;
 
 // ---- Configuración de API (Google Apps Script) ----
-let API_URL = localStorage.getItem('apiUrl') || '';
+// Pega aquí la URL de tu implementación (termina en /exec). Así queda fija para todos
+// los que abran la página publicada y no se pregunta cada vez.
+let API_URL = 'https://script.google.com/macros/s/AKfycbyNrgEEu0lj5Eyj0ShVzByclauebShUJxXSPBCe4ulF9cCAgYYzq14LKlACyd0G6E4v/exec';
+function apiUrlIsConfigured(){
+  return !!(API_URL && API_URL !== 'PEGA_AQUI_TU_URL_DE_APPS_SCRIPT');
+}
 function ensureApiUrl(){
-  while(!API_URL){
-    const v = prompt('Pega la URL de tu Apps Script Web App (termina en /exec):');
-    if(v === null) { alert('Se necesita la URL de la API para usar la ficha.'); continue; }
-    API_URL = v.trim();
-  }
-  localStorage.setItem('apiUrl', API_URL);
+  if(apiUrlIsConfigured()) return true;
+  const stored = localStorage.getItem('apiUrl');
+  if(stored){ API_URL = stored; return true; }
+  showApiUrlBanner();
+  return false;
+}
+function showApiUrlBanner(){
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,30,30,.92);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Helvetica,Arial,sans-serif;padding:20px;';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:6px;padding:24px;max-width:420px;width:100%;">
+      <h3 style="margin:0 0 10px;font-size:16px;color:#0F5C5C;">Falta configurar la API</h3>
+      <p style="font-size:13px;color:#4A5D5D;line-height:1.5;margin:0 0 14px;">Pega la URL de tu Apps Script Web App (termina en <code>/exec</code>) para poder guardar y cargar pacientes.</p>
+      <input id="apiUrlInput" type="text" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%;padding:9px;border:1px solid #D8D2C2;border-radius:3px;font-size:13px;margin-bottom:10px;box-sizing:border-box;">
+      <button id="apiUrlSave" style="width:100%;padding:10px;background:#0F5C5C;color:#fff;border:none;border-radius:3px;font-size:13px;font-weight:600;cursor:pointer;">Guardar y continuar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  const input = overlay.querySelector('#apiUrlInput');
+  overlay.querySelector('#apiUrlSave').addEventListener('click', ()=>{
+    const v = input.value.trim();
+    if(!v) { input.style.borderColor = '#A63A3A'; return; }
+    API_URL = v;
+    localStorage.setItem('apiUrl', v);
+    overlay.remove();
+    bindFieldListeners();
+    loadIndex();
+  });
 }
 async function apiGet(params){
   const url = API_URL + '?' + new URLSearchParams(params).toString();
@@ -721,7 +747,7 @@ document.getElementById('btnDel').addEventListener('click', async ()=>{
 });
 
 (async function init(){
-  ensureApiUrl();
+  if(!ensureApiUrl()) return; // el banner se encarga de continuar tras guardar la URL
   bindFieldListeners();
   await loadIndex();
 })();
