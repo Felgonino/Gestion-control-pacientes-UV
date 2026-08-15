@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ficha Clínica — Odontología UV · Maureem González</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -147,6 +148,32 @@
 
   .placeholder{display:flex;align-items:center;justify-content:center;height:70vh;flex-direction:column;gap:10px;color:var(--ink-soft);font-family:'Poppins',sans-serif;text-align:center;}
   .placeholder h2{font-family:'Poppins',sans-serif;color:var(--ink);font-size:22px;margin:0;}
+
+  @media (max-width: 760px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%;flex:none;flex-direction:column;padding:14px;}
+    .perfil{flex-direction:row;gap:12px;text-align:left;padding:8px 4px 12px;}
+    .avatar,.avatar-fallback{width:56px;height:56px;font-size:22px;}
+    .perfil-nombre{margin-top:0;font-size:15px;}
+    .ptlist{max-height:180px;}
+    .newpt{padding:13px 14px;font-size:15px;}
+    .topbar{padding:14px 16px;flex-direction:column;align-items:stretch;gap:10px;}
+    .ptname{font-size:20px;}
+    .topactions{flex-wrap:wrap;}
+    .topactions .btn{flex:1;text-align:center;padding:11px 10px;font-size:13px;}
+    .tabs{padding:0 8px;}
+    .tab{padding:11px 12px;font-size:13.5px;}
+    .content{padding:16px 14px 48px;}
+    .card{padding:16px 14px;}
+    .grid,.grid3{grid-template-columns:1fr;}
+    input[type=text],input[type=date],input[type=number],select,textarea{font-size:16px;} /* evita zoom automático en iOS */
+    .checks{font-size:14px;}
+    .checks label{font-size:14px;}
+    table{font-size:13px;}
+    .tooth{width:30px;height:40px;}
+    .arch{gap:2px;}
+    .panel{max-width:100%;}
+  }
 
   @media print{
     .sidebar,.tabs,.topactions,.newpt,.del{display:none!important;}
