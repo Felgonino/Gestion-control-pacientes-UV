@@ -2,29 +2,32 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Ficha Clínica — Odontología UV</title>
+<title>Ficha Clínica — Odontología UV · Maureem González</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#F5F3ED;
+    --paper:#FDF3F6;        /* rosado muy claro de fondo */
     --panel:#FFFFFF;
-    --ink:#1B3A3A;
-    --ink-soft:#4A5D5D;
-    --line:#D8D2C2;
-    --teal:#0F5C5C;
-    --teal-dark:#0A3D3D;
-    --clay:#B5654A;
-    --amber:#C68A2E;
-    --danger:#A63A3A;
-    --ok:#3E7A4F;
-    --grey:#8A8578;
-    font-family:'Iowan Old Style','Georgia',serif;
+    --ink:#5A3A47;          /* texto principal, ciruela suave */
+    --ink-soft:#9A7080;     /* texto secundario */
+    --line:#F3D9E2;         /* líneas y bordes rosados */
+    --teal:#E59BB3;         /* rosa medio (antes teal) */
+    --teal-dark:#C77D95;    /* rosa oscuro para barras */
+    --clay:#E8A0A0;         /* coral pastel para acentos */
+    --amber:#E0B15C;
+    --danger:#D08290;
+    --ok:#8BB89A;
+    --grey:#B79AA5;
+    font-family:'Poppins','Segoe UI',sans-serif;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     background:var(--paper);
     color:var(--ink);
-    font-family:'Iowan Old Style',Georgia,serif;
+    font-family:'Poppins','Segoe UI',sans-serif;
     -webkit-font-smoothing:antialiased;
   }
   .app{display:flex;min-height:100vh;}
@@ -33,26 +36,31 @@
     width:260px;flex:0 0 260px;background:var(--teal-dark);color:#EDEAE0;
     padding:20px 16px;display:flex;flex-direction:column;gap:14px;
   }
-  .brand{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9FC3C0;font-family:'Helvetica Neue',Arial,sans-serif;}
-  .brand strong{display:block;font-size:17px;color:#fff;font-family:'Iowan Old Style',Georgia,serif;letter-spacing:0;margin-top:2px;}
+  .brand{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9FC3C0;font-family:'Poppins',sans-serif;}
+  .brand strong{display:block;font-size:17px;color:#fff;font-family:'Poppins',sans-serif;letter-spacing:0;margin-top:2px;}
+  .perfil{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 8px 8px;border-bottom:1px solid rgba(255,255,255,.18);margin-bottom:6px;}
+  .avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+  .avatar-fallback{width:84px;height:84px;border-radius:50%;background:#fff;color:var(--teal-dark);font-weight:700;font-size:30px;align-items:center;justify-content:center;border:3px solid #fff;}
+  .perfil-nombre{color:#fff;font-weight:600;font-size:14px;margin-top:10px;line-height:1.25;}
+  .perfil-rol{color:#FCE4EC;font-weight:300;font-size:11px;margin-top:2px;}
   .newpt{
-    background:var(--clay);color:#fff;border:none;padding:10px 12px;border-radius:3px;
-    font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:.02em;
-    cursor:pointer;text-align:left;
+    background:var(--clay);color:#fff;border:none;padding:11px 14px;border-radius:12px;
+    font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;letter-spacing:.01em;
+    cursor:pointer;text-align:center;
   }
-  .newpt:hover{background:#9F5640;}
+  .newpt:hover{filter:brightness(.95);}
   .ptlist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-top:4px;}
   .ptcard{
     background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:3px;
-    padding:9px 10px;cursor:pointer;font-family:'Helvetica Neue',Arial,sans-serif;
+    padding:9px 10px;cursor:pointer;font-family:'Poppins',sans-serif;
   }
   .ptcard:hover{background:rgba(255,255,255,.1);}
   .ptcard.active{background:rgba(181,101,74,.25);border-color:var(--clay);}
   .ptcard .nm{font-size:13px;font-weight:600;color:#fff;}
   .ptcard .meta{font-size:11px;color:#9FC3C0;margin-top:2px;}
-  .del{background:none;border:none;color:#c98;font-size:10px;cursor:pointer;padding:0;margin-top:4px;font-family:'Helvetica Neue',Arial,sans-serif;}
+  .del{background:none;border:none;color:#c98;font-size:10px;cursor:pointer;padding:0;margin-top:4px;font-family:'Poppins',sans-serif;}
   .del:hover{color:#fff;text-decoration:underline;}
-  .empty-list{font-size:12px;color:#9FC3C0;font-family:'Helvetica Neue',Arial,sans-serif;padding:8px 2px;}
+  .empty-list{font-size:12px;color:#9FC3C0;font-family:'Poppins',sans-serif;padding:8px 2px;}
 
   /* MAIN */
   .main{flex:1;display:flex;flex-direction:column;min-width:0;}
@@ -60,17 +68,17 @@
     background:var(--panel);border-bottom:2px solid var(--teal);padding:16px 28px;
     display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;
   }
-  .ptname{font-size:22px;font-weight:600;}
-  .ptsub{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .ptname{font-size:24px;font-weight:700;letter-spacing:-.01em;}
+  .ptsub{font-family:'Poppins',sans-serif;font-size:12px;color:var(--ink-soft);margin-top:2px;}
   .topactions{display:flex;gap:8px;}
   .btn{
-    font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:.02em;
-    padding:8px 14px;border-radius:3px;border:1px solid var(--teal);background:transparent;color:var(--teal);cursor:pointer;
+    font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;letter-spacing:.01em;
+    padding:9px 15px;border-radius:20px;border:1.5px solid var(--teal);background:transparent;color:var(--teal-dark);cursor:pointer;
   }
   .btn:hover{background:var(--teal);color:#fff;}
   .btn.solid{background:var(--teal);color:#fff;}
   .btn.solid:hover{background:var(--teal-dark);}
-  .savebadge{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:var(--ok);align-self:center;opacity:0;transition:opacity .3s;}
+  .savebadge{font-family:'Poppins',sans-serif;font-size:11px;color:var(--ok);align-self:center;opacity:0;transition:opacity .3s;}
   .savebadge.show{opacity:1;}
 
   .tabs{
@@ -78,7 +86,7 @@
     overflow-x:auto;
   }
   .tab{
-    font-family:'Helvetica Neue',Arial,sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+    font-family:'Poppins',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);
     padding:12px 14px;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;
   }
   .tab:hover{color:var(--teal);}
@@ -87,24 +95,24 @@
   .content{flex:1;padding:26px 28px 60px;overflow-y:auto;}
   .panel{display:none;max-width:920px;}
   .panel.active{display:block;}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:20px 22px;margin-bottom:16px;}
-  .card h3{margin:0 0 14px;font-size:14px;color:var(--teal-dark);text-transform:uppercase;letter-spacing:.06em;font-family:'Helvetica Neue',Arial,sans-serif;border-bottom:1px solid var(--line);padding-bottom:8px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 4px rgba(197,125,149,.06);}
+  .card h3{margin:0 0 14px;font-size:15px;font-weight:600;color:var(--teal-dark);letter-spacing:.01em;font-family:'Poppins',sans-serif;border-bottom:2px solid var(--line);padding-bottom:8px;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 18px;}
   .field{display:flex;flex-direction:column;gap:4px;}
   .field.full{grid-column:1/-1;}
-  label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
+  label{font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;}
   input[type=text],input[type=date],input[type=number],select,textarea{
-    font-family:'Helvetica Neue',Arial,sans-serif;font-size:13.5px;padding:8px 9px;border:1px solid var(--line);
+    font-family:'Poppins',sans-serif;font-size:13.5px;padding:8px 9px;border:1px solid var(--line);
     border-radius:3px;background:#FCFBF8;color:var(--ink);
   }
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);}
-  textarea{resize:vertical;min-height:60px;font-family:'Helvetica Neue',Arial,sans-serif;}
-  .checks{display:flex;flex-wrap:wrap;gap:10px 18px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;}
+  textarea{resize:vertical;min-height:60px;font-family:'Poppins',sans-serif;}
+  .checks{display:flex;flex-wrap:wrap;gap:10px 18px;font-family:'Poppins',sans-serif;font-size:13px;}
   .checks label{text-transform:none;font-weight:400;font-size:13px;display:flex;align-items:center;gap:6px;color:var(--ink);}
 
   /* ODONTOGRAMA */
-  .odonto-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;}
+  .odonto-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-family:'Poppins',sans-serif;font-size:11.5px;}
   .leg{display:flex;align-items:center;gap:5px;}
   .sw{width:12px;height:12px;border-radius:2px;border:1px solid #0002;}
   .arch{display:flex;justify-content:center;gap:3px;margin-bottom:6px;}
@@ -113,12 +121,12 @@
     display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fff;
     position:relative;
   }
-  .tooth .num{font-family:'Helvetica Neue',Arial,sans-serif;font-size:9px;color:var(--ink-soft);position:absolute;top:-15px;}
+  .tooth .num{font-family:'Poppins',sans-serif;font-size:9px;color:var(--ink-soft);position:absolute;top:-15px;}
   .arch-row{display:flex;flex-direction:column;align-items:center;margin-bottom:22px;}
-  .archlabel{font-family:'Helvetica Neue',Arial,sans-serif;font-size:10px;color:var(--grey);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px;}
+  .archlabel{font-family:'Poppins',sans-serif;font-size:10px;color:var(--grey);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px;}
 
   /* PLAN TABLE */
-  table{width:100%;border-collapse:collapse;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;}
+  table{width:100%;border-collapse:collapse;font-family:'Poppins',sans-serif;font-size:13px;}
   th{background:#EFEBDF;text-align:left;padding:8px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);border-bottom:1px solid var(--line);}
   td{padding:6px 8px;border-bottom:1px solid var(--line);}
   td input,td select{width:100%;border:none;background:transparent;padding:4px;font-size:13px;}
@@ -128,17 +136,17 @@
 
   /* SESSIONS */
   .session{border:1px solid var(--line);border-radius:4px;margin-bottom:14px;overflow:hidden;}
-  .session-head{background:#EFEBDF;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-family:'Helvetica Neue',Arial,sans-serif;}
+  .session-head{background:#EFEBDF;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-family:'Poppins',sans-serif;}
   .session-head .tit{font-size:13px;font-weight:600;}
   .session-body{padding:14px;}
-  .checklist-item{display:flex;align-items:flex-start;gap:8px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);}
+  .checklist-item{display:flex;align-items:flex-start;gap:8px;font-family:'Poppins',sans-serif;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line);}
   .checklist-item:last-child{border-bottom:none;}
-  .status-pill{font-size:10px;padding:2px 8px;border-radius:10px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;text-transform:uppercase;}
+  .status-pill{font-size:10px;padding:2px 8px;border-radius:10px;font-family:'Poppins',sans-serif;font-weight:600;text-transform:uppercase;}
   .status-pill.ok{background:#DEEEE0;color:var(--ok);}
   .status-pill.pend{background:#F3E3D6;color:var(--clay);}
 
-  .placeholder{display:flex;align-items:center;justify-content:center;height:70vh;flex-direction:column;gap:10px;color:var(--ink-soft);font-family:'Helvetica Neue',Arial,sans-serif;text-align:center;}
-  .placeholder h2{font-family:'Iowan Old Style',Georgia,serif;color:var(--ink);font-size:22px;margin:0;}
+  .placeholder{display:flex;align-items:center;justify-content:center;height:70vh;flex-direction:column;gap:10px;color:var(--ink-soft);font-family:'Poppins',sans-serif;text-align:center;}
+  .placeholder h2{font-family:'Poppins',sans-serif;color:var(--ink);font-size:22px;margin:0;}
 
   @media print{
     .sidebar,.tabs,.topactions,.newpt,.del{display:none!important;}
@@ -151,6 +159,13 @@
 <div class="app">
   <div class="sidebar">
     <div class="brand">Facultad de Odontología · UV<strong>Fichas Clínicas</strong></div>
+    <div class="perfil">
+      <img class="avatar" src="Mau.jpeg" alt="Maureem González"
+           onerror="this.style.display='none';document.getElementById('avatarIniciales').style.display='flex';">
+      <div class="avatar-fallback" id="avatarIniciales" style="display:none;">MG</div>
+      <div class="perfil-nombre">Maureem González Muñoz</div>
+      <div class="perfil-rol">Estudiante de Odontología</div>
+    </div>
     <button class="newpt" id="btnNew">+ Nuevo paciente</button>
     <button class="newpt" id="btnAgenda" style="background:var(--teal);">📅 Agenda semanal</button>
     <div class="ptlist" id="ptList"></div>
@@ -355,13 +370,13 @@
           <div class="card">
             <h3>2.2 Evaluación coronaria</h3>
             <div id="grp_corona" class="checks"></div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Profundidad de caries (si aplica)</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Profundidad de caries (si aplica)</label>
               <div id="grp_caries_prof" class="checks" style="margin-top:6px;"></div>
             </div>
             <div class="grid" style="margin-top:10px;">
               <div class="field"><label>Tipo de restauración</label><input type="text" data-fe="restauracionTipo"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Cámara pulpar</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Cámara pulpar</label>
               <div id="grp_pulpar" class="checks" style="margin-top:6px;"></div>
             </div>
           </div>
@@ -373,13 +388,13 @@
                 <select data-fe="numRaices"><option value="">Seleccionar</option><option>1</option><option>2</option><option>3</option><option>4+</option></select>
               </div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Morfología radicular</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Morfología radicular</label>
               <div id="grp_morfo" class="checks" style="margin-top:6px;"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Grado de curvatura (si aplica)</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Grado de curvatura (si aplica)</label>
               <div id="grp_curva_grado" class="checks" style="margin-top:6px;"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Alteraciones radiculares</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Alteraciones radiculares</label>
               <div id="grp_alteraciones" class="checks" style="margin-top:6px;"></div>
             </div>
           </div>
@@ -391,13 +406,13 @@
                 <select data-fe="numConductos"><option value="">Seleccionar</option><option>1</option><option>2</option><option>3</option><option>4+</option></select>
               </div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Amplitud del conducto</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Amplitud del conducto</label>
               <div id="grp_amplitud" class="checks" style="margin-top:6px;"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Estado apical</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Estado apical</label>
               <div id="grp_apical_estado" class="checks" style="margin-top:6px;"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Endodoncia previa (retratamiento)</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Endodoncia previa (retratamiento)</label>
               <div id="grp_endo_previa" class="checks" style="margin-top:6px;"></div>
             </div>
             <div class="grid" style="margin-top:10px;">
@@ -410,22 +425,22 @@
 
           <div class="card">
             <h3>2.5 Evaluación del tejido periapical y periodontal</h3>
-            <div style="margin-top:0;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Espacio del ligamento periodontal</label>
+            <div style="margin-top:0;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Espacio del ligamento periodontal</label>
               <div id="grp_ligamento" class="checks" style="margin-top:6px;"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Localización del ensanchamiento (si aplica)</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Localización del ensanchamiento (si aplica)</label>
               <div id="grp_ensanchado_loc" class="checks" style="margin-top:6px;"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Lámina dura</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Lámina dura</label>
               <div id="grp_lamina" class="checks" style="margin-top:6px;"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Zona periapical / perirradicular</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Zona periapical / perirradicular</label>
               <div id="grp_periapical" class="checks" style="margin-top:6px;"></div>
             </div>
             <div class="grid" style="margin-top:10px;">
               <div class="field"><label>Tamaño lesión radiolúcida (mm, si aplica)</label><input type="text" data-fe="lesionTamano"></div>
             </div>
-            <div style="margin-top:10px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Zona de la furca (multirradiculares)</label>
+            <div style="margin-top:10px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Zona de la furca (multirradiculares)</label>
               <div id="grp_furca" class="checks" style="margin-top:6px;"></div>
             </div>
           </div>
@@ -452,7 +467,7 @@
             </div>
             <div class="field full" style="margin-top:10px;"><label>3.2 Examen visual / clínico</label><textarea data-fe="examenVisual" placeholder="Caries, restauraciones defectuosas, fístula, aumento de volumen..."></textarea></div>
             <div style="margin-top:14px;">
-              <label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">3.3 Pruebas clínicas — diente control</label>
+              <label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">3.3 Pruebas clínicas — diente control</label>
               <table style="margin-top:8px;">
                 <thead><tr><th>Prueba</th><th>Diente afectado</th><th>Diente control</th><th>Observaciones</th></tr></thead>
                 <tbody id="pruebasBody"></tbody>
@@ -478,7 +493,7 @@
               </div>
               <div class="field full"><label>Justificación</label><textarea data-fe="justificacionPronostico"></textarea></div>
             </div>
-            <div style="margin-top:14px;"><label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">5.3 Derivaciones</label>
+            <div style="margin-top:14px;"><label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">5.3 Derivaciones</label>
               <div id="grp_derivaciones" class="checks" style="margin-top:6px;"></div>
             </div>
             <div class="field full" style="margin-top:10px;"><label>Motivo de derivación</label><textarea data-fe="motivoDerivacion"></textarea></div>
@@ -557,7 +572,7 @@
 
 <!-- Modal de agendamiento -->
 <div id="citaModal" style="display:none;position:fixed;inset:0;background:rgba(20,30,30,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:#fff;border-radius:6px;padding:22px;max-width:420px;width:100%;font-family:Helvetica,Arial,sans-serif;">
+  <div style="background:#fff;border-radius:6px;padding:22px;max-width:420px;width:100%;font-family:'Poppins',sans-serif;">
     <h3 id="citaModalTit" style="margin:0 0 14px;font-size:16px;color:#0A3D3D;">Agendar cita</h3>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div><label style="font-size:11px;font-weight:600;color:#4A5D5D;text-transform:uppercase;">Paciente</label>
@@ -645,7 +660,7 @@ function ensureApiUrl(){
 }
 function showApiUrlBanner(){
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,30,30,.92);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Helvetica,Arial,sans-serif;padding:20px;';
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(90,58,71,.92);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;padding:20px;";
   overlay.innerHTML = `
     <div style="background:#fff;border-radius:6px;padding:24px;max-width:420px;width:100%;">
       <h3 style="margin:0 0 10px;font-size:16px;color:#0F5C5C;">Falta configurar la API</h3>
@@ -1007,7 +1022,7 @@ document.getElementById('btnAddPlan').addEventListener('click', ()=>{
 function renderSesiones(){
   const wrap = document.getElementById('sesionesList');
   if(state.ficha.sesiones.length===0){
-    wrap.innerHTML = '<div class="card" style="text-align:center;color:var(--ink-soft);font-family:Helvetica,Arial,sans-serif;font-size:13px;">Sin sesiones registradas todavía.</div>';
+    wrap.innerHTML = '<div class="card" style="text-align:center;color:var(--ink-soft);font-size:13px;">Sin sesiones registradas todavía.</div>';
     return;
   }
   wrap.innerHTML = state.ficha.sesiones.map((s,i)=>{
@@ -1027,7 +1042,7 @@ function renderSesiones(){
           <div class="field"><label>Procedimiento realizado</label><input type="text" data-ses="${i}" data-k="proc" value="${escapeHtml(s.proc)}"></div>
         </div>
         <div class="field full" style="margin-bottom:12px;"><label>Observaciones</label><textarea data-ses="${i}" data-k="obs">${escapeHtml(s.obs)}</textarea></div>
-        <label style="font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Checklist de requisitos</label>
+        <label style="font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;">Checklist de requisitos</label>
         ${SESION_CHECKS.map((c,ci)=>`
           <div class="checklist-item">
             <input type="checkbox" data-sesescheck="${i}" data-ci="${ci}" ${s.checks[ci]?'checked':''}>
@@ -1159,7 +1174,7 @@ function renderAgenda(){
     const fecha = fechas[idx];
     const fstr = fmtFecha(fecha);
     html += `<div>
-      <div style="font-family:Helvetica,Arial,sans-serif;font-weight:600;font-size:13px;color:#0A3D3D;text-align:center;padding:8px;background:#EFEBDF;border-radius:4px 4px 0 0;">
+      <div style="font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;color:#0A3D3D;text-align:center;padding:8px;background:#EFEBDF;border-radius:4px 4px 0 0;">
         ${DIAS_NOMBRE[diaNum]}<br><span style="font-weight:400;font-size:11px;color:#8A8578;">${fmtFechaCorta(fecha)}</span>
       </div>
       <div style="padding:6px 0;">`;
@@ -1169,14 +1184,14 @@ function renderAgenda(){
       if(cita){
         const est = ESTADO_COLOR[cita.estado] || '#8A8578';
         html += `<div onclick="editarCita('${fstr}','${b.curso}','${b.hora}')" style="cursor:pointer;border-left:4px solid ${barColor};background:#fff;border:1px solid #D8D2C2;border-left:4px solid ${barColor};border-radius:3px;padding:8px;margin-bottom:6px;">
-          <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#8A8578;">${b.hora} · ${b.curso}</div>
-          <div style="font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;color:#1B3A3A;margin:2px 0;">${escapeHtml(cita.pacienteNombre||'(sin nombre)')}</div>
-          <span style="font-family:Helvetica,Arial,sans-serif;font-size:10px;padding:1px 7px;border-radius:9px;background:${est}22;color:${est};font-weight:600;">${cita.estado||'Agendada'}</span>
+          <div style="font-family:'Poppins',sans-serif;font-size:11px;color:#8A8578;">${b.hora} · ${b.curso}</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:#1B3A3A;margin:2px 0;">${escapeHtml(cita.pacienteNombre||'(sin nombre)')}</div>
+          <span style="font-family:'Poppins',sans-serif;font-size:10px;padding:1px 7px;border-radius:9px;background:${est}22;color:${est};font-weight:600;">${cita.estado||'Agendada'}</span>
         </div>`;
       } else {
         html += `<div onclick="editarCita('${fstr}','${b.curso}','${b.hora}')" style="cursor:pointer;border:1px dashed #D8D2C2;border-radius:3px;padding:8px;margin-bottom:6px;text-align:center;color:#B0AB9C;">
-          <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;">${b.hora} · ${b.curso}</div>
-          <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;">+ Agendar</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:11px;">${b.hora} · ${b.curso}</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:12px;">+ Agendar</div>
         </div>`;
       }
     });
