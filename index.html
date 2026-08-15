@@ -152,6 +152,7 @@
   <div class="sidebar">
     <div class="brand">Facultad de Odontología · UV<strong>Fichas Clínicas</strong></div>
     <button class="newpt" id="btnNew">+ Nuevo paciente</button>
+    <button class="newpt" id="btnAgenda" style="background:var(--teal);">📅 Agenda semanal</button>
     <div class="ptlist" id="ptList"></div>
   </div>
 
@@ -531,6 +532,52 @@
 
       </div>
     </div>
+
+    <div id="agendaWrap" style="display:none;">
+      <div class="topbar">
+        <div>
+          <div class="ptname">Agenda semanal de citas</div>
+          <div class="ptsub" id="agendaRango">—</div>
+        </div>
+        <div class="topactions">
+          <button class="btn" id="btnSemAnt">← Semana anterior</button>
+          <button class="btn" id="btnSemHoy">Hoy</button>
+          <button class="btn" id="btnSemSig">Semana siguiente →</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="card" style="max-width:none;">
+          <div id="agendaGrid" style="overflow-x:auto;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal de agendamiento -->
+<div id="citaModal" style="display:none;position:fixed;inset:0;background:rgba(20,30,30,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#fff;border-radius:6px;padding:22px;max-width:420px;width:100%;font-family:Helvetica,Arial,sans-serif;">
+    <h3 id="citaModalTit" style="margin:0 0 14px;font-size:16px;color:#0A3D3D;">Agendar cita</h3>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div><label style="font-size:11px;font-weight:600;color:#4A5D5D;text-transform:uppercase;">Paciente</label>
+        <select id="citaPaciente" style="width:100%;padding:8px;border:1px solid #D8D2C2;border-radius:3px;font-size:13px;margin-top:4px;"></select>
+      </div>
+      <div><label style="font-size:11px;font-weight:600;color:#4A5D5D;text-transform:uppercase;">Estado</label>
+        <select id="citaEstado" style="width:100%;padding:8px;border:1px solid #D8D2C2;border-radius:3px;font-size:13px;margin-top:4px;">
+          <option>Agendada</option><option>Confirmada</option><option>Atendida</option><option>No asistió</option>
+        </select>
+      </div>
+      <div><label style="font-size:11px;font-weight:600;color:#4A5D5D;text-transform:uppercase;">Notas</label>
+        <input id="citaNotas" type="text" style="width:100%;padding:8px;border:1px solid #D8D2C2;border-radius:3px;font-size:13px;margin-top:4px;box-sizing:border-box;">
+      </div>
+      <div id="citaModalInfo" style="font-size:12px;color:#8A8578;"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end;">
+      <button class="btn" id="citaEliminar" style="border-color:#A63A3A;color:#A63A3A;display:none;">Eliminar cita</button>
+      <button class="btn" id="citaCancelar">Cancelar</button>
+      <button class="btn solid" id="citaGuardar">Guardar</button>
+    </div>
   </div>
 </div>
 
@@ -761,6 +808,7 @@ async function selectPatient(id){
   state.activeId = id;
   state.ficha = await loadFicha(id);
   document.getElementById('placeholder').style.display='none';
+  document.getElementById('agendaWrap').style.display='none';
   document.getElementById('fichaWrap').style.display='block';
   renderPtList();
   fillForm();
@@ -1051,6 +1099,144 @@ document.getElementById('btnDel').addEventListener('click', async ()=>{
   document.getElementById('placeholder').style.display='flex';
   renderPtList();
 });
+
+// ===== AGENDA SEMANAL =====
+// Bloques de cita (cupo único) por día de semana. 1=Lunes ... 5=Viernes
+const BLOQUES = {
+  1: [ {curso:'Adulto', hora:'13:45'}, {curso:'Adulto', hora:'15:20'} ],
+  2: [ {curso:'Quirúrgica', hora:'08:45'}, {curso:'Quirúrgica', hora:'10:20'} ],
+  3: [ {curso:'Infantil', hora:'08:45'}, {curso:'Infantil', hora:'10:20'} ],
+  4: [ {curso:'Quirúrgica', hora:'08:45'}, {curso:'Quirúrgica', hora:'10:20'}, {curso:'Adulto', hora:'13:45'}, {curso:'Adulto', hora:'15:20'} ],
+  5: [ {curso:'Infantil', hora:'08:45'}, {curso:'Infantil', hora:'10:20'}, {curso:'Adulto', hora:'13:45'}, {curso:'Adulto', hora:'15:20'} ]
+};
+const DIAS_NOMBRE = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+const CURSO_COLOR = { 'Adulto':'#3E7A4F', 'Quirúrgica':'#0F5C5C', 'Infantil':'#8A5FA6' };
+const ESTADO_COLOR = { 'Agendada':'#C68A2E', 'Confirmada':'#0F5C5C', 'Atendida':'#3E7A4F', 'No asistió':'#A63A3A' };
+
+let citas = [];
+let semanaBase = null; // lunes de la semana visible
+let citaEdit = null;   // {fecha, curso, hora, existente?}
+
+function lunesDeSemana(d){
+  const x = new Date(d);
+  const day = x.getDay(); // 0 dom .. 6 sab
+  const diff = (day === 0 ? -6 : 1) - day;
+  x.setDate(x.getDate() + diff);
+  x.setHours(0,0,0,0);
+  return x;
+}
+function fmtFecha(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${da}`;
+}
+function fmtFechaCorta(d){
+  return String(d.getDate()).padStart(2,'0')+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+
+async function loadCitas(){
+  try{ citas = await apiGet({action:'listCitas'}); if(!Array.isArray(citas)) citas=[]; }
+  catch(e){ console.error(e); citas=[]; }
+}
+
+async function abrirAgenda(){
+  document.getElementById('placeholder').style.display='none';
+  document.getElementById('fichaWrap').style.display='none';
+  document.getElementById('agendaWrap').style.display='block';
+  if(!semanaBase) semanaBase = lunesDeSemana(new Date());
+  await loadCitas();
+  renderAgenda();
+}
+
+function renderAgenda(){
+  const grid = document.getElementById('agendaGrid');
+  const dias = [1,2,3,4,5];
+  const fechas = dias.map(i=>{ const d=new Date(semanaBase); d.setDate(d.getDate()+(i-1)); return d; });
+  document.getElementById('agendaRango').textContent =
+    'Semana del ' + fmtFechaCorta(fechas[0]) + ' al ' + fmtFechaCorta(fechas[4]) + '-' + fechas[4].getFullYear();
+
+  let html = '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;min-width:640px;">';
+  dias.forEach((diaNum, idx)=>{
+    const fecha = fechas[idx];
+    const fstr = fmtFecha(fecha);
+    html += `<div>
+      <div style="font-family:Helvetica,Arial,sans-serif;font-weight:600;font-size:13px;color:#0A3D3D;text-align:center;padding:8px;background:#EFEBDF;border-radius:4px 4px 0 0;">
+        ${DIAS_NOMBRE[diaNum]}<br><span style="font-weight:400;font-size:11px;color:#8A8578;">${fmtFechaCorta(fecha)}</span>
+      </div>
+      <div style="padding:6px 0;">`;
+    (BLOQUES[diaNum]||[]).forEach(b=>{
+      const cita = citas.find(c=>c.fecha===fstr && c.curso===b.curso && c.hora===b.hora);
+      const barColor = CURSO_COLOR[b.curso] || '#4A5D5D';
+      if(cita){
+        const est = ESTADO_COLOR[cita.estado] || '#8A8578';
+        html += `<div onclick="editarCita('${fstr}','${b.curso}','${b.hora}')" style="cursor:pointer;border-left:4px solid ${barColor};background:#fff;border:1px solid #D8D2C2;border-left:4px solid ${barColor};border-radius:3px;padding:8px;margin-bottom:6px;">
+          <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#8A8578;">${b.hora} · ${b.curso}</div>
+          <div style="font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:600;color:#1B3A3A;margin:2px 0;">${escapeHtml(cita.pacienteNombre||'(sin nombre)')}</div>
+          <span style="font-family:Helvetica,Arial,sans-serif;font-size:10px;padding:1px 7px;border-radius:9px;background:${est}22;color:${est};font-weight:600;">${cita.estado||'Agendada'}</span>
+        </div>`;
+      } else {
+        html += `<div onclick="editarCita('${fstr}','${b.curso}','${b.hora}')" style="cursor:pointer;border:1px dashed #D8D2C2;border-radius:3px;padding:8px;margin-bottom:6px;text-align:center;color:#B0AB9C;">
+          <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;">${b.hora} · ${b.curso}</div>
+          <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;">+ Agendar</div>
+        </div>`;
+      }
+    });
+    html += `</div></div>`;
+  });
+  html += '</div>';
+  grid.innerHTML = html;
+}
+
+window.editarCita = function(fecha, curso, hora){
+  const existente = citas.find(c=>c.fecha===fecha && c.curso===curso && c.hora===hora);
+  citaEdit = { fecha, curso, hora, id: existente ? existente.id : ('c'+Date.now()+Math.random().toString(36).slice(2,6)) };
+  const sel = document.getElementById('citaPaciente');
+  sel.innerHTML = '<option value="">— Seleccionar paciente —</option>' +
+    state.patients.map(p=>`<option value="${p.id}">${escapeHtml(p.nombre||'(sin nombre)')} ${p.rut?('· '+escapeHtml(p.rut)):''}</option>`).join('');
+  sel.value = existente ? existente.pacienteId : '';
+  document.getElementById('citaEstado').value = existente ? (existente.estado||'Agendada') : 'Agendada';
+  document.getElementById('citaNotas').value = existente ? (existente.notas||'') : '';
+  document.getElementById('citaModalTit').textContent = (existente?'Editar':'Agendar')+' — '+curso+' '+hora;
+  document.getElementById('citaModalInfo').textContent = 'Fecha: '+fecha.split('-').reverse().join('-');
+  document.getElementById('citaEliminar').style.display = existente ? 'inline-block' : 'none';
+  document.getElementById('citaModal').style.display = 'flex';
+};
+
+function cerrarModal(){ document.getElementById('citaModal').style.display='none'; citaEdit=null; }
+
+document.getElementById('citaCancelar').addEventListener('click', cerrarModal);
+document.getElementById('citaGuardar').addEventListener('click', async ()=>{
+  if(!citaEdit) return;
+  const pacienteId = document.getElementById('citaPaciente').value;
+  if(!pacienteId){ alert('Selecciona un paciente.'); return; }
+  const pac = state.patients.find(p=>p.id===pacienteId);
+  const cita = {
+    id: citaEdit.id, fecha: citaEdit.fecha, curso: citaEdit.curso, hora: citaEdit.hora,
+    pacienteId, pacienteNombre: pac ? (pac.nombre||'(sin nombre)') : '',
+    estado: document.getElementById('citaEstado').value,
+    notas: document.getElementById('citaNotas').value
+  };
+  const btn = document.getElementById('citaGuardar');
+  btn.disabled=true; btn.textContent='Guardando...';
+  try{
+    const r = await apiPost({action:'saveCita', cita});
+    if(r && r.error==='ocupado'){ alert(r.mensaje); btn.disabled=false; btn.textContent='Guardar'; return; }
+    await loadCitas();
+    renderAgenda();
+    cerrarModal();
+  }catch(e){ alert('No se pudo guardar la cita: '+e.message); }
+  btn.disabled=false; btn.textContent='Guardar';
+});
+document.getElementById('citaEliminar').addEventListener('click', async ()=>{
+  if(!citaEdit) return;
+  if(!confirm('¿Eliminar esta cita?')) return;
+  try{ await apiPost({action:'deleteCita', id: citaEdit.id}); await loadCitas(); renderAgenda(); cerrarModal(); }
+  catch(e){ alert('No se pudo eliminar: '+e.message); }
+});
+
+document.getElementById('btnAgenda').addEventListener('click', abrirAgenda);
+document.getElementById('btnSemAnt').addEventListener('click', ()=>{ semanaBase.setDate(semanaBase.getDate()-7); renderAgenda(); });
+document.getElementById('btnSemSig').addEventListener('click', ()=>{ semanaBase.setDate(semanaBase.getDate()+7); renderAgenda(); });
+document.getElementById('btnSemHoy').addEventListener('click', ()=>{ semanaBase = lunesDeSemana(new Date()); renderAgenda(); });
 
 (async function init(){
   if(!ensureApiUrl()) return; // el banner se encarga de continuar tras guardar la URL
