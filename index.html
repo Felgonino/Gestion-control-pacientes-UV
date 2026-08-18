@@ -153,7 +153,7 @@
     .app{flex-direction:column;}
     .sidebar{width:100%;flex:none;flex-direction:column;padding:14px;}
     .perfil{flex-direction:column;gap:6px;text-align:center;padding:10px 4px 14px;}
-    .avatar,.avatar-fallback{width:120px;height:120px;font-size:44px;}
+    .avatar,.avatar-fallback{width:168px;height:168px;font-size:60px;}
     .perfil-nombre{margin-top:8px;font-size:16px;}
     .ptlist{max-height:180px;}
     .newpt{padding:13px 14px;font-size:15px;}
@@ -238,7 +238,8 @@
             <div class="grid">
               <div class="field"><label>Nombre completo</label><input type="text" data-f="nombre"></div>
               <div class="field"><label>RUT</label><input type="text" data-f="rut" placeholder="12.345.678-9"></div>
-              <div class="field"><label>Fecha de nacimiento</label><input type="date" data-f="fnac"></div>
+              <div class="field"><label>Fecha de nacimiento</label><input type="date" data-f="fnac" id="inpFnac"></div>
+              <div class="field"><label>Edad</label><input type="text" id="inpEdad" readonly style="background:#F9EEF2;color:var(--ink-soft);"></div>
               <div class="field"><label>Sexo</label>
                 <select data-f="sexo"><option value="">Seleccionar</option><option>Femenino</option><option>Masculino</option><option>Otro</option></select>
               </div>
@@ -292,6 +293,33 @@
               <label><input type="checkbox" value="Trastorno hemorrágico">Trastorno hemorrágico</label>
               <label><input type="checkbox" value="VIH/Hepatitis">VIH / Hepatitis</label>
               <label><input type="checkbox" value="Ninguno">Ninguno relevante</label>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Antecedentes médicos familiares</h3>
+            <div class="checks" id="antecedentesFam">
+              <label><input type="checkbox" value="Hipertensión">Hipertensión</label>
+              <label><input type="checkbox" value="Diabetes">Diabetes</label>
+              <label><input type="checkbox" value="Cardiopatías">Cardiopatías</label>
+              <label><input type="checkbox" value="Cáncer">Cáncer</label>
+              <label><input type="checkbox" value="Enfermedad periodontal">Enfermedad periodontal</label>
+              <label><input type="checkbox" value="Alergias">Alergias</label>
+              <label><input type="checkbox" value="Ninguno">Ninguno relevante</label>
+            </div>
+            <div class="field full" style="margin-top:12px;"><label>Detalle (parentesco / observaciones)</label><textarea data-f="antecedentesFamDet"></textarea></div>
+          </div>
+          <div class="card">
+            <h3>Experiencia odontológica previa</h3>
+            <div class="grid">
+              <div class="field"><label>Última visita al dentista</label><input type="text" data-f="ultimaVisita" placeholder="Ej: hace 6 meses / 2 años"></div>
+              <div class="field"><label>Frecuencia de control</label>
+                <select data-f="frecuenciaControl"><option value="">Seleccionar</option><option>Regular (cada 6-12 meses)</option><option>Ocasional</option><option>Solo por urgencias</option><option>Primera vez</option></select>
+              </div>
+              <div class="field"><label>Experiencias negativas / miedo dental</label>
+                <select data-f="miedoDental"><option value="">Seleccionar</option><option>No</option><option>Leve</option><option>Moderado</option><option>Severo</option></select>
+              </div>
+              <div class="field"><label>Reacción a anestesia previa</label><input type="text" data-f="reaccionAnestesia" placeholder="Sin problemas / describir"></div>
+              <div class="field full"><label>Tratamientos previos relevantes</label><textarea data-f="tratamientosPrevios" placeholder="Endodoncias, extracciones, ortodoncia, prótesis, etc."></textarea></div>
             </div>
           </div>
           <div class="card">
@@ -743,6 +771,7 @@ function emptyFicha(){
   return {
     fields: {},
     antecedentes: [],
+    antecedentesFam: [],
     odonto: {},
     perio: SEXTANTES.map(()=>({sondaje:'',sangrado:'',movilidad:'',recesion:''})),
     plan: [],
@@ -769,6 +798,7 @@ function normalizeFicha(r){
   return {
     fields: Object.assign({}, base.fields, r.fields || {}),
     antecedentes: Array.isArray(r.antecedentes) ? r.antecedentes : base.antecedentes,
+    antecedentesFam: Array.isArray(r.antecedentesFam) ? r.antecedentesFam : base.antecedentesFam,
     odonto: Object.assign({}, base.odonto, r.odonto || {}),
     perio: (Array.isArray(r.perio) && r.perio.length === base.perio.length) ? r.perio : base.perio,
     plan: Array.isArray(r.plan) ? r.plan : base.plan,
@@ -846,6 +876,22 @@ function escapeHtml(s){
   return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function actualizarEdad(){
+  const fnac = document.getElementById('inpFnac');
+  const out = document.getElementById('inpEdad');
+  if(!fnac || !out) return;
+  const v = fnac.value;
+  if(!v){ out.value = ''; return; }
+  const nac = new Date(v);
+  if(isNaN(nac)){ out.value=''; return; }
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if(m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  if(edad < 0 || edad > 130){ out.value=''; return; }
+  out.value = edad + (edad === 1 ? ' año' : ' años');
+}
+
 async function selectPatient(id){
   state.activeId = id;
   state.ficha = await loadFicha(id);
@@ -878,6 +924,10 @@ function fillForm(){
   document.querySelectorAll('#antecedentes input').forEach(cb=>{
     cb.checked = state.ficha.antecedentes.includes(cb.value);
   });
+  document.querySelectorAll('#antecedentesFam input').forEach(cb=>{
+    cb.checked = (state.ficha.antecedentesFam || []).includes(cb.value);
+  });
+  actualizarEdad();
   document.querySelectorAll('[data-fe]').forEach(el=>{
     el.value = state.ficha.endo.fields[el.dataset.fe] || '';
   });
@@ -910,6 +960,17 @@ function bindFieldListeners(){
       scheduleSave();
     });
   });
+  document.querySelectorAll('#antecedentesFam input').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      if(!Array.isArray(state.ficha.antecedentesFam)) state.ficha.antecedentesFam = [];
+      const v = cb.value;
+      if(cb.checked){ if(!state.ficha.antecedentesFam.includes(v)) state.ficha.antecedentesFam.push(v); }
+      else{ state.ficha.antecedentesFam = state.ficha.antecedentesFam.filter(a=>a!==v); }
+      scheduleSave();
+    });
+  });
+  const inpFnac = document.getElementById('inpFnac');
+  if(inpFnac) inpFnac.addEventListener('input', actualizarEdad);
   document.querySelectorAll('[data-fe]').forEach(el=>{
     el.addEventListener('input', ()=>{
       state.ficha.endo.fields[el.dataset.fe] = el.value;
