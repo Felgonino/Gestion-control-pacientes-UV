@@ -1267,7 +1267,7 @@ function renderAgenda(){
       </div>
       <div style="padding:6px 0;">`;
     (BLOQUES[diaNum]||[]).forEach(b=>{
-      const cita = citas.find(c=>c.fecha===fstr && c.curso===b.curso && c.hora===b.hora);
+      const cita = citas.find(c=>String(c.fecha||'').trim().replace(/^'/,'').slice(0,10)===fstr && c.curso===b.curso && String(c.hora||'').trim()===b.hora);
       const barColor = CURSO_COLOR[b.curso] || '#4A5D5D';
       if(cita){
         const est = ESTADO_COLOR[cita.estado] || '#8A8578';
